@@ -8,10 +8,6 @@ Fetches ZenHub Releases
 
 * `repository_id`: *Required.* The repository id (which is different from the repo name, you can get this from the github api or the ZenHub dashboard url).
 
-* `access_token`: *Optional.* Used for accessing a release in a private-repo
-   during an `in` and pushing a release to a repo during an `out`. The access
-   token you create is only required to have the `repo` or `public_repo` scope.
-
 ### Example
 
 ``` yaml
