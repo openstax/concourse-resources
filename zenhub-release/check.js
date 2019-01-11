@@ -38,7 +38,7 @@ if (config.source.mode === 'multiple') {
       ids.push(release.release_id);
       return ids;
     }, []))
-    .then(ids => ({ids}))
+    .then(ids => ({ids: ids.join(',')}))
     .then(writeOut)
   ;
 } else {
