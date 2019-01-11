@@ -4,10 +4,10 @@ const fs = require("fs");
 const fetch = require("node-fetch");
 
 const stdin = fs.readFileSync(0, 'utf-8');
-const source = JSON.parse(stdin);
+const config = JSON.parse(stdin);
 
-const token = source.source.token;
-const repo = source.source.repository_id;
+const token = config.source.token;
+const repo = config.source.repository_id;
 
 const endpoint = `https://api.zenhub.io/p1/repositories/${repo}/reports/releases`;
 const headers = {
@@ -16,7 +16,7 @@ const headers = {
 
 const filterOpen = releases => releases.filter(release => release.state === 'open');
 const filterAfter = releases => {
-  const version = source.version;
+  const version = config.version;
 
   if (version) {
     return releases.slice(releases.findIndex(release => release.release_id === version.id));
@@ -27,11 +27,25 @@ const filterAfter = releases => {
 const mapIds = releases => releases.map(release => ({id: release.release_id}));
 const writeOut = releases => process.stdout.write(JSON.stringify(releases));
 
-fetch(endpoint, {headers})
+const request = fetch(endpoint, {headers})
   .then(response => response.json())
   .then(filterOpen)
-  .then(filterAfter)
-  .then(mapIds)
-  .then(ids => ids.reverse()) // concourse expects newer at the top
-  .then(writeOut)
 ;
+
+if (config.source.mode === 'multiple') {
+  request
+    .then(releases => releases.reduce((ids, release) => {
+      ids.push(release.release_id);
+      return ids;
+    }, []))
+    .then(ids => ({ids}))
+    .then(writeOut)
+  ;
+} else {
+  request
+    .then(filterAfter)
+    .then(mapIds)
+    .then(ids => ids.reverse()) // concourse expects newer at the top
+    .then(writeOut)
+  ;
+}
