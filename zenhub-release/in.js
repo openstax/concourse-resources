@@ -34,7 +34,7 @@ const writeOut = release => {
     version: {
       id: release.release_id,
     },
-    metadata: Object.entries(release)
+    metadata: Object.entries(release).map(([name, value]) => ({name, value}))
   }));
 };
 
