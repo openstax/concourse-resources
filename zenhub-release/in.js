@@ -4,20 +4,17 @@ const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 
-const dest = process.argv[2];
+const outdir = process.argv[2];
 const stdin = fs.readFileSync(0, 'utf-8');
-const source = JSON.parse(stdin);
+const config = JSON.parse(stdin);
 
-const token = source.source.token;
-const repo = source.source.repository_id;
-const version = source.version.id;
-
-const endpoint = `https://api.zenhub.io/p1/reports/release/${version}`;
+const token = config.source.token;
+const repo = config.source.repository_id;
 const headers = {
   'X-Authentication-Token': token
 }
 
-const writeFiles = release => {
+const writeFiles = dest => release => {
   const jsonFile = path.resolve(dest, 'release.json');
   const titleFile = path.resolve(dest, 'title.txt');
   const idFile = path.resolve(dest, 'id.txt');
@@ -29,19 +26,41 @@ const writeFiles = release => {
   return release;
 };
 
-const writeOut = release => {
-  process.stdout.write(JSON.stringify({
-    version: {
-      id: release.release_id,
-    },
-    metadata: Object.entries(release)
-      .map(([name, value]) => ({name, value}))
-      .filter(meta => ['string', 'number'].indexOf(typeof(meta.value)) > -1)
-  }));
+const writeOut = result => {
+  process.stdout.write(JSON.stringify(result));
 };
 
-fetch(endpoint, {headers})
-  .then(response => response.json())
-  .then(writeFiles)
-  .then(writeOut)
-;
+if (config.source.mode === 'multiple') {
+  const versions = config.version.ids.split(',');
+  const endpoint = `https://api.zenhub.io/p1/repositories/${repo}/reports/releases`;
+  const request = fetch(endpoint, {headers})
+    .then(response => response.json())
+    .then(releases => releases.filter(release => versions.indexOf(release.release_id) > -1))
+    .then(releases => {
+      releases.forEach(release => writeFiles(path.resolve(outdir, release.release_id)));
+      return releases;
+    })
+    .then(releases => ({
+      version: config.version,
+      metadata: releases.map(release => ({name: release.release_id, value: release.title}))
+    }))
+    .then(writeOut)
+  ;
+} else {
+  const version = config.version.id;
+  const endpoint = `https://api.zenhub.io/p1/reports/release/${version}`;
+
+  fetch(endpoint, {headers})
+    .then(response => response.json())
+    .then(writeFiles(outdir))
+    .then(release => ({
+      version: {
+        id: release.release_id,
+      },
+      metadata: Object.entries(release)
+        .map(([name, value]) => ({name, value}))
+        .filter(meta => ['string', 'number'].indexOf(typeof(meta.value)) > -1)
+    }))
+    .then(writeOut)
+  ;
+}
