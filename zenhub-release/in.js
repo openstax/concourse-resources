@@ -19,9 +19,9 @@ const writeFiles = dest => release => {
   const titleFile = path.resolve(dest, 'title.txt');
   const idFile = path.resolve(dest, 'id.txt');
 
-  fs.writeFileSync(jsonFile, JSON.stringify(release), 'utf-8');
-  fs.writeFileSync(titleFile, release.title, 'utf-8');
-  fs.writeFileSync(idFile, release.release_id, 'utf-8');
+  fs.writeFileSync(jsonFile, JSON.stringify(release));
+  fs.writeFileSync(titleFile, release.title);
+  fs.writeFileSync(idFile, release.release_id);
 
   return release;
 };
@@ -37,7 +37,11 @@ if (config.source.mode === 'multiple') {
     .then(response => response.json())
     .then(releases => releases.filter(release => versions.indexOf(release.release_id) > -1))
     .then(releases => {
-      releases.forEach(release => writeFiles(path.resolve(outdir, release.release_id)));
+      releases.forEach(release => {
+        const dest = path.resolve(outdir, release.release_id);
+        fs.mkdirSync(dest);
+        writeFiles(dest)(release);
+      });
       return releases;
     })
     .then(releases => ({
