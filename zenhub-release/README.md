@@ -8,6 +8,8 @@ Fetches ZenHub Releases
 
 * `repository_id`: *Required.* The repository id (which is different from the repo name, you can get this from the github api or the ZenHub dashboard url).
 
+* `mode`: *optional.* default *single*, specify *multiple* to use all open releases as the resource.
+
 ### Example
 
 ``` yaml
@@ -42,6 +44,7 @@ fetches the given release, creating the following files:
 * `id.txt` plaintext file with the release id
 * `title.txt` plaintext file with the release title
 
+if `source.mode` is set to *multiple* then these files are all generated in folders corresponding to the release id.
 
 ### `out`
 
