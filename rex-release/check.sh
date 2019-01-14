@@ -29,4 +29,4 @@ else
   RESULTS=`echo $RESULTS | jq "map(select(.LastModified >= \"$TARGET\"))"`
 fi
 
-echo $RESULTS | jq ".[] | {id: .Key | ltrimstr(\"rex/releases/\") | rtrimstr(\"/rex/release.json\")}"
+echo $RESULTS | jq "map({id: .Key | ltrimstr(\"rex/releases/\") | rtrimstr(\"/rex/release.json\")})"
