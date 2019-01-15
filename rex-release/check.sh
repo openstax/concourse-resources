@@ -33,7 +33,7 @@ then
   RESULTS=`echo $RESULTS | jq "[first]"`
 else
   # filter by time
-  RESULTS=`echo $RESULTS | jq "map(select(.LastModified >= \"$TARGET\"))"`
+  RESULTS=`echo $RESULTS | jq "map(select(.LastModified >= \"$AFTER\"))"`
 fi
 
 echo $RESULTS | jq "map({id: .Key | ltrimstr(\"rex/releases/\") | rtrimstr(\"/rex/release.json\")})" >&3
