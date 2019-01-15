@@ -1,6 +1,6 @@
 # REX Releases Resource
 
-finds and creates REX releases
+uploads and downloads REX releases
 
 ## Source Configuration
 
