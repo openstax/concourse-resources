@@ -1,18 +1,30 @@
 #!/bin/bash
-set -e
 
-pwd
-ls
+WORKDIR=$1
+if [ -z "$WORKDIR" ]; then
+  echo "usage: $0 <path/to/source>"
+  exit 1
+fi
 
-SOURCE=$(cat)
-DIR=$(echo $SOURCE | jq -r '.params.path | select (.!=null)')
-BUCKET=$(echo $SOURCE | jq -r '.source.bucket | select (.!=null)')
-PREFIX=$(echo $SOURCE | jq -r '.source.prefix | select (.!=null)')
+set -e -u
+
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+cd $WORKDIR
+
+PAYLOAD=$(mktemp /tmp/resource-in.XXXXXX)
+
+cat > $PAYLOAD <&0
+
+DIR=$(jq -r '.params.path | select (.!=null)' < $PAYLOAD)
+BUCKET=$(jq -r '.source.bucket | select (.!=null)' < $PAYLOAD)
+PREFIX=$(jq -r '.source.prefix | select (.!=null)' < $PAYLOAD)
 VERSION=$(jq -r '.id | select (.!=null)' < $DIR/rex/release.json)
-export AWS_ACCESS_KEY_ID=$(echo $SOURCE | jq -r '.source.access_key_id')
-export AWS_SECRET_ACCESS_KEY=$(echo $SOURCE | jq -r '.source.secret_access_key')
+export AWS_ACCESS_KEY_ID=$(jq -r '.source.access_key_id' < $PAYLOAD)
+export AWS_SECRET_ACCESS_KEY=$(jq -r '.source.secret_access_key' < $PAYLOAD)
 
 aws s3 sync --exclude 'books/*' $DIR s3://$BUCKET/rex/releases/$VERSION
 aws s3 sync --content-type 'text/html' $DIR/books/ s3://$BUCKET/rex/releases/$VERSION/books
 
-jq -n "{version: {id: \"$VERSION\"}}"
+jq -n "{version: {id: \"$VERSION\"}}" >&3

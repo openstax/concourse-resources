@@ -1,12 +1,18 @@
 #!/bin/bash
-set -e
+set -e -u
 
-SOURCE=$(cat)
-BUCKET=$(echo $SOURCE | jq -r '.source.bucket | select (.!=null)')
-PREFIX=$(echo $SOURCE | jq -r '.source.prefix | select (.!=null)')
-VERSION=$(echo $SOURCE | jq -r '.version.id | select (.!=null)')
-export AWS_ACCESS_KEY_ID=$(echo $SOURCE | jq -r '.source.access_key_id')
-export AWS_SECRET_ACCESS_KEY=$(echo $SOURCE | jq -r '.source.secret_access_key')
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+PAYLOAD=$(mktemp /tmp/resource-in.XXXXXX)
+
+cat > $PAYLOAD <&0
+
+BUCKET=$(jq -r '.source.bucket | select (.!=null)' < $PAYLOAD)
+PREFIX=$(jq -r '.source.prefix | select (.!=null)' < $PAYLOAD)
+VERSION=$(jq -r '.version.id | select (.!=null)' < $PAYLOAD)
+export AWS_ACCESS_KEY_ID=$(jq -r '.source.access_key_id' < $PAYLOAD)
+export AWS_SECRET_ACCESS_KEY=$(jq -r '.source.secret_access_key' < $PAYLOAD)
 
 RESULTS=`aws s3api list-objects --bucket $BUCKET --prefix rex/releases/$PREFIX`
 
@@ -30,4 +36,4 @@ else
   RESULTS=`echo $RESULTS | jq "map(select(.LastModified >= \"$TARGET\"))"`
 fi
 
-echo $RESULTS | jq "map({id: .Key | ltrimstr(\"rex/releases/\") | rtrimstr(\"/rex/release.json\")})"
+echo $RESULTS | jq "map({id: .Key | ltrimstr(\"rex/releases/\") | rtrimstr(\"/rex/release.json\")})" >&3
