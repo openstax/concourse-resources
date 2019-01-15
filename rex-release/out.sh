@@ -2,10 +2,10 @@
 set -e
 
 SOURCE=$(cat)
+DIR=$(echo $SOURCE | jq -r '.params.path | select (.!=null)')
 BUCKET=$(echo $SOURCE | jq -r '.source.bucket | select (.!=null)')
 PREFIX=$(echo $SOURCE | jq -r '.source.prefix | select (.!=null)')
 VERSION=$(jq -r '.id | select (.!=null)' < $DIR/rex/release.json)
-DIR=$(echo $SOURCE | jq -r '.params.path | select (.!=null)')
 export AWS_ACCESS_KEY_ID=$(echo $SOURCE | jq -r '.source.access_key_id')
 export AWS_SECRET_ACCESS_KEY=$(echo $SOURCE | jq -r '.source.secret_access_key')
 
