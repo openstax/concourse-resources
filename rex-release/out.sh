@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+pwd
+ls
+
 SOURCE=$(cat)
 DIR=$(echo $SOURCE | jq -r '.params.path | select (.!=null)')
 BUCKET=$(echo $SOURCE | jq -r '.source.bucket | select (.!=null)')
