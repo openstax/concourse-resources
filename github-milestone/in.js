@@ -64,7 +64,7 @@ if (config.source.mode === 'multiple') {
     .then(writeFiles(outdir))
     .then(milestone => ({
       version: {
-        id: milestone.number,
+        id: '' + milestone.number,
       },
       metadata: Object.entries(milestone)
         .filter(entry => ['string', 'number'].indexOf(typeof(entry[1])) > -1)
