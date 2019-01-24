@@ -18,7 +18,6 @@ const headers = {
 const filterAfter = milestones => {
   const version = config.version;
 
-  console.log(version);
   if (version) {
     return milestones.slice(milestones.findIndex(milestone => milestone.number == version.id));
   } else {
