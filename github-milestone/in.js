@@ -52,7 +52,7 @@ if (config.source.mode === 'multiple') {
     })
     .then(milestones => ({
       version: config.version,
-      metadata: milestones.map(milestone => ({name: milestone.number, value: milestone.title}))
+      metadata: milestones.map(milestone => ({name: '' + milestone.number, value: milestone.title}))
     }))
     .then(writeOut)
   ;
