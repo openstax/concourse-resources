@@ -67,8 +67,8 @@ if (config.source.mode === 'multiple') {
         id: milestone.number,
       },
       metadata: Object.entries(milestone)
-        .map(([name, value]) => ({name, value}))
-        .filter(meta => ['string', 'number'].indexOf(typeof(meta.value)) > -1)
+        .filter(entry => ['string', 'number'].indexOf(typeof(entry[1])) > -1)
+        .map(([name, value]) => ({name, value: '' + value}))
     }))
     .then(writeOut)
   ;
