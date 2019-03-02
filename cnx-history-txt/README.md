@@ -24,6 +24,20 @@ resources:
 
 ## Development
 
+### Configure Python Dev Environment
+
+Create a virtualenv:
+
+`python3 -m venv .venv`
+
+Install dependencies:
+
+`pip install .[dev]`
+
+### Run unit tests
+
+`pytest -vvv tests/`
+
 ### Build the docker image
 
 Create a distribution:
@@ -33,5 +47,3 @@ Create a distribution:
 Build the image:
 
 `docker build -t user/concourse-history-txt-resource .`
-
-
