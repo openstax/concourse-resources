@@ -2,7 +2,7 @@ import json
 import os
 import sys
 
-from src.history import build_history_url
+from src.history import get_instance_urls
 
 
 def in_(dest_path, in_stream):
@@ -12,13 +12,13 @@ def in_(dest_path, in_stream):
     instance = input["source"]["instance"]
 
     version_path = os.path.join(dest_path, "version")
-    instance_path = os.path.join(dest_path, "instance.txt")
+    urls_path = os.path.join(dest_path, "urls.json")
 
     with open(version_path, "w") as file:
         file.write(version)
 
-    with open(instance_path, "w") as file:
-        file.write(build_history_url(instance))
+    with open(urls_path, "w") as file:
+        json.dump(get_instance_urls(instance), file)
 
     return version
 
