@@ -31,6 +31,12 @@ const request = fetch(endpoint, {headers})
   .then(response => response.json())
 ;
 
+if (config.source.prefix) {
+  request.then(milestones => milestones
+    .filter(milestone => milestone.title.indexOf(config.source.prefix) === 0)
+  );
+}
+
 if (config.source.mode === 'multiple') {
   request
     .then(milestones => milestones.reduce((ids, milestone) => ([...ids, milestone.number]), []))
