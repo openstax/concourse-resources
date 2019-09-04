@@ -33,7 +33,7 @@ returns mapping of branch names to commit shas
 resource directory will have subdirectories for each branch name with the git 
 files inside, helper files are created in there just like the default git resource.
 
-be careful with branch names with `/` in them, this will create nested directories.
+`/` in branch names will be replaced with `-` in the directory names.
 
 ### `out`
 

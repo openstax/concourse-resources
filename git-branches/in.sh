@@ -43,9 +43,7 @@ for ref in "${refs_array[@]}"; do
   name=${ref_array[0]}
   sha=${ref_array[1]}
 
-  ref_destination="$destination/$name";
-
-  mkdir -p "$ref_destination"
+  ref_destination="$destination/${name/\//-}";
 
   git clone "$checkout" "$ref_destination"
 
