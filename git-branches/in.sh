@@ -28,7 +28,6 @@ configure_credentials "$payload"
 
 uri=$(jq -r '.source.uri // ""' < "$payload")
 git_config_payload=$(jq -r '.source.git_config // []' < "$payload")
-short_ref_format=$(jq -r '(.params.short_ref_format // "%s")' < "$payload")
 refs=$(jq -r '.version.refs // ""' < "$payload")
 
 configure_git_global "${git_config_payload}"
@@ -56,13 +55,9 @@ for ref in "${refs_array[@]}"; do
   # Using https://github.com/mdomke/concourse-email-resource for example
   git --no-pager log -1 --pretty=format:"%ae" > .git/committer
 
-  # Store git-resource returned version ref .git/ref. Useful to know concourse
-  # pulled ref in following tasks and resources.
-  echo "$ref" > .git/ref
-
   # Store short ref with templating. Useful to build Docker images with
   # a custom tag
-  echo "$ref" | cut -c1-7 | awk "{ printf \"${short_ref_format}\", \$1 }" > .git/short_ref
+  echo "$sha" > .git/short_ref
 
   # Store commit message in .git/commit_message. Can be used to inform about
   # the content of a successfull build.
