@@ -1,7 +1,7 @@
 #!/bin/bash
 
-OUTDIR=$1
-if [ -z "$OUTDIR" ]; then
+outdir=$1
+if [ -z "$outdir" ]; then
   echo "usage: $0 <path/to/dest>"
   exit 1
 fi
@@ -11,16 +11,29 @@ set -e -u
 exec 3>&1 # make stdout available as fd 3 for the result
 exec 1>&2 # redirect all output to stderr for logging
 
-PAYLOAD=$(mktemp /tmp/resource-in.XXXXXX)
+payload=$(mktemp /tmp/resource-in.xxxxxx)
 
-cat > $PAYLOAD <&0
+cat > "$payload" <&0
 
-BUCKET=$(jq -r '.source.bucket | select (.!=null)' < $PAYLOAD)
-PREFIX=$(jq -r '.source.prefix | select (.!=null)' < $PAYLOAD)
-VERSION=$(jq -r '.version.id | select (.!=null)' < $PAYLOAD)
-export AWS_ACCESS_KEY_ID=$(jq -r '.source.access_key_id' < $PAYLOAD)
-export AWS_SECRET_ACCESS_KEY=$(jq -r '.source.secret_access_key' < $PAYLOAD)
+bucket=$(jq -r '.source.bucket | select (.!=null)' < "$payload")
+mode=$(jq -r '.source.mode | select (.!=null)' < "$payload")
+aws_access_key_id=$(jq -r '.source.access_key_id' < "$payload")
+aws_secret_access_key=$(jq -r '.source.secret_access_key' < "$payload")
+export AWS_ACCESS_KEY_ID=$aws_access_key_id
+export AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
 
-aws s3 cp s3://$BUCKET/rex/releases/$VERSION/rex/release.json $OUTDIR/rex/release.json
 
-jq -n "{version: {id: \"$VERSION\"}}" >&3
+if [ "$mode" = "multiple" ]; then
+  versions=$(jq -r '(.version.ids // "") | split(",") | join(" ")' < "$payload")
+
+  for version in $versions
+  do
+    aws s3 cp "s3://$bucket/rex/releases/$version/rex/release.json" "$outdir/${version/\//-}/rex/release.json"
+  done;
+
+  jq -n "{version: {ids: \"$versions\"}}" >&3
+else
+  version=$(jq -r '.version.id | select (.!=null)' < "$payload")
+  aws s3 cp "s3://$bucket/rex/releases/$version/rex/release.json" "$outdir/rex/release.json"
+  jq -n "{version: {id: \"$version\"}}" >&3
+fi;
