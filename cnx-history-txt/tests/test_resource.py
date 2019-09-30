@@ -1,15 +1,17 @@
 import io
 import json
 import os
+import tempfile
 from unittest import mock
 
-from src import check
+import vcr
+from src import check, in_
 
 DATA_DIR = os.path.join(os.path.realpath(os.path.dirname(__file__)), "data")
 
 
 def read_file(filepath):
-    with open(filepath) as infile:
+    with open(filepath, "r") as infile:
         return infile.read()
 
 
@@ -75,3 +77,25 @@ class TestCheck(object):
 
         assert result == [{"date": "2019-02-19 10:33:39 CST"},
                           {"date": "2019-02-19 15:29:04 CST"}]
+
+
+class TestIn(object):
+    @vcr.use_cassette('tests/cassettes/test_in.yaml')
+    def test_in(self):
+        date = "2019-02-19 10:33:39 CST"
+        version = {"version": {"date": date}}
+        dest_path = tempfile.mkdtemp()
+
+        in_stream = make_input_stream(version["version"])
+
+        result = in_.in_(dest_path, in_stream)
+        assert result == version
+
+        date_data = read_file(os.path.join(dest_path, "version"))
+        assert date_data == version["version"]["date"]
+
+        urls_data = read_file(os.path.join(dest_path, "urls.json"))
+        assert urls_data == read_file(os.path.join(DATA_DIR, "urls.json"))
+
+        app_version_data = read_file(os.path.join(dest_path, "app_versions.json"))
+        assert app_version_data == read_file(os.path.join(DATA_DIR, "app_versions.json"))

@@ -1,0 +1,64 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.22.0
+    method: GET
+    uri: https://staging.cnx.org/version.txt
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAz2NQW6DMBBF95zC8iqVwmiMx4DZpkfIBXA8JFYijICQNFHvXozabv/7eu8tfTuz
+        bIQsUNkcba5RoG3INGTF4fMo95mQD3ZL4Ee6ERK1yGVhdMfal3VlsCRF3FFna2dqIusdO7FbEIwG
+        /NgMp/6Zt+PpEpYtRqA0qH8y3N0tTJfQnxNEUBXgBiOPwM8hjvOUSL8q4hxe7KFvXzFehVgr1d97
+        GHnafjWo3ynZPQ+3+JX2ZY1CIbPv7Ad9XIHr+AAAAA==
+    headers:
+      Accept-Ranges:
+      - bytes
+      Age:
+      - '0'
+      Cache-Control:
+      - no-cache
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - text/plain
+      Date:
+      - Mon, 30 Sep 2019 21:22:51 GMT
+      ETag:
+      - W/"5d92151d-f8"
+      Expires:
+      - Mon, 30 Sep 2019 21:22:50 GMT
+      Last-Modified:
+      - Mon, 30 Sep 2019 14:45:49 GMT
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=16000000
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      Via:
+      - 1.1 varnish-v4
+      X-Varnish:
+      - '2778577'
+      X-Varnish-Backend:
+      - webview
+      X-Varnish-Cache:
+      - MISS
+      X-Varnish-Status:
+      - uncacheable - pass or hit-for-pass
+      X-Varnish-Ttl:
+      - '0.000'
+    status:
+      code: 200
+      message: OK
+version: 1
