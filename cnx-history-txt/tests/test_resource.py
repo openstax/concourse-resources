@@ -36,7 +36,6 @@ class TestCheck(object):
 
     @vcr.use_cassette("tests/cassettes/test_check.yaml")
     def test_edge_case(self):
-
         version = None
 
         in_stream = make_input_stream(version)
@@ -49,7 +48,6 @@ class TestCheck(object):
 
     @vcr.use_cassette("tests/cassettes/test_check.yaml")
     def test_has_newest_release_date(self):
-
         version = {'date': '2019-10-03 16:12:50 CDT'}
 
         in_stream = make_input_stream(version)
@@ -59,7 +57,6 @@ class TestCheck(object):
 
     @vcr.use_cassette("tests/cassettes/test_check.yaml")
     def test_has_newer_release_dates(self):
-
         version = {'date': '2019-09-27 10:36:01 CDT'}
 
         in_stream = make_input_stream(version)
@@ -69,23 +66,24 @@ class TestCheck(object):
                           {'date': '2019-09-30 9:45:49 CDT'},
                           {'date': '2019-10-03 16:12:50 CDT'}]
 
-    class TestIn(object):
-        @vcr.use_cassette('tests/cassettes/test_in.yaml')
-        def test_in(self):
-            date = "2019-02-19 10:33:39 CST"
-            version = {"version": {"date": date}}
-            dest_path = tempfile.mkdtemp()
 
-            in_stream = make_input_stream(version["version"])
+class TestIn(object):
+    @vcr.use_cassette('tests/cassettes/test_in.yaml')
+    def test_in(self):
+        date = "2019-02-19 10:33:39 CST"
+        version = {"version": {"date": date}}
+        dest_path = tempfile.mkdtemp()
 
-            result = in_.in_(dest_path, in_stream)
-            assert result == version
+        in_stream = make_input_stream(version["version"])
 
-            date_data = read_file(os.path.join(dest_path, "version"))
-            assert date_data == version["version"]["date"]
+        result = in_.in_(dest_path, in_stream)
+        assert result == version
 
-            urls_data = read_file(os.path.join(dest_path, "urls.json"))
-            assert urls_data == read_file(os.path.join(DATA_DIR, "urls.json"))
+        date_data = read_file(os.path.join(dest_path, "version"))
+        assert date_data == version["version"]["date"]
 
-            app_version_data = read_file(os.path.join(dest_path, "app_versions.json"))
-            assert app_version_data == read_file(os.path.join(DATA_DIR, "app_versions.json"))
+        urls_data = read_file(os.path.join(dest_path, "urls.json"))
+        assert urls_data == read_file(os.path.join(DATA_DIR, "urls.json"))
+
+        app_version_data = read_file(os.path.join(dest_path, "app_versions.json"))
+        assert app_version_data == read_file(os.path.join(DATA_DIR, "app_versions.json"))
