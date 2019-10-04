@@ -33,7 +33,7 @@ def get_instance_urls(instance):
 
 
 def build_history_url(instance):
-    return HISTORY_URL_TEMPLATE.format(instance["webview_url"])
+    return HISTORY_URL_TEMPLATE.format(get_instance_urls(instance)["webview_url"])
 
 
 def get_history_txt(instance):
