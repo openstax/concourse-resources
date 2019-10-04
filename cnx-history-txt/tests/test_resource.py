@@ -34,10 +34,8 @@ def make_input_stream(version):
 
 class TestCheck(object):
 
-    # @mock.patch("src.history.get_history_txt")
     @vcr.use_cassette("tests/cassettes/test_check.yaml")
     def test_edge_case(self):
-        # mock_fn.return_value = mock_history_txt_response()
 
         version = None
 
@@ -51,7 +49,6 @@ class TestCheck(object):
 
     @vcr.use_cassette("tests/cassettes/test_check.yaml")
     def test_has_newest_release_date(self):
-        # mock_fn.return_value = mock_history_txt_response()
 
         version = {'date': '2019-10-03 16:12:50 CDT'}
 
@@ -62,7 +59,6 @@ class TestCheck(object):
 
     @vcr.use_cassette("tests/cassettes/test_check.yaml")
     def test_has_newer_release_dates(self):
-        # mock_fn.return_value = mock_history_txt_response()
 
         version = {'date': '2019-09-27 10:36:01 CDT'}
 
