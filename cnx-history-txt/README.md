@@ -36,14 +36,15 @@ Install dependencies:
 
 ### Run unit tests
 
-`pytest -vvv tests/`
+`make test`
 
-### Build the docker image
+### Build the sdist and docker image
 
-Create a distribution:
+Create a distribution and Docker image:
 
-`python setup.py sdist`
+`make build`
 
-Build the image:
+### Publish the image
 
-`docker build -t user/concourse-history-txt-resource .`
+`make publish`
+

@@ -8,16 +8,16 @@ HISTORY_URL_TEMPLATE = "{0}/history.txt"
 RELEASE_DELIMITER = "==============================="
 VERSIONS_DELIMITER = "-------------------------------"
 INSTANCE_URLS = {
-    "prod": {"legacy_url": "https://legacy.cnx-org",
+    "prod": {"legacy_url": "https://legacy.cnx.org",
              "archive_url": "https://archive.cnx.org",
              "webview_url": "https://cnx.org"},
-    "dev": {"legacy_url": "https://legacy-dev.cnx-org",
+    "dev": {"legacy_url": "https://legacy-dev.cnx.org",
             "archive_url": "https://archive-dev.cnx.org",
             "webview_url": "https://dev.cnx.org"},
-    "qa": {"legacy_url": "https://legacy-qa.cnx-org",
+    "qa": {"legacy_url": "https://legacy-qa.cnx.org",
            "archive_url": "https://archive-qa.cnx.org",
            "webview_url": "https://qa.cnx.org"},
-    "staging": {"legacy_url": "https://legacy-staging.cnx-org",
+    "staging": {"legacy_url": "https://legacy-staging.cnx.org",
                 "archive_url": "https://archive-staging.cnx.org",
                 "webview_url": "https://staging.cnx.org"},
 }
@@ -33,7 +33,7 @@ def get_instance_urls(instance):
 
 
 def build_history_url(instance):
-    return HISTORY_URL_TEMPLATE.format(instance["webview_url"])
+    return HISTORY_URL_TEMPLATE.format(get_instance_urls(instance)["webview_url"])
 
 
 def get_history_txt(instance):

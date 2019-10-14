@@ -1,4 +1,4 @@
-from setuptools import find_packages, setup
+from setuptools import setup
 import os
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -19,13 +19,16 @@ setup(
     url='',
     author='m1yag1',
     license='AGPLv3.0',
-    packages=find_packages(),
+    packages=['tests', 'src'],
     install_requires=requirements,
     extras_require={
         'dev': [
-            'pytest'
+            'pytest',
+            'pytest-vcr'
         ]
     },
+    tests_require=['pytest', 'pytest-vcr'],
+    test_suite='tests',
     include_package_data=True,
     entry_points={
         'console_scripts': [
