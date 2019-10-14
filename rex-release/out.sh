@@ -29,7 +29,7 @@ upload-release() {
   path=$1
   version=$2
 
-  aws s3 sync --exclude 'books/*' "$path" "s3://$bucket/rex/releases/$version"
+  aws s3 sync --exclude 'books/*' --cache-control 'max-age=31536000'  "$path" "s3://$bucket/rex/releases/$version"
   aws s3 sync --content-type 'text/html' --cache-control 'max-age=0' "$path/books/" "s3://$bucket/rex/releases/$version/books"
 }
 
