@@ -1,0 +1,63 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.23.0
+    method: GET
+    uri: https://chromedriver.storage.googleapis.com/LATEST_RELEASE
+  response:
+    body:
+      string: 81.0.4044.69
+    headers:
+      Accept-Ranges:
+      - bytes
+      Age:
+      - '1957'
+      Alt-Svc:
+      - quic=":443"; ma=2592000; v="46,43",h3-Q050=":443"; ma=2592000,h3-Q049=":443";
+        ma=2592000,h3-Q048=":443"; ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443";
+        ma=2592000,h3-T050=":443"; ma=2592000
+      Cache-Control:
+      - public, max-age=3600
+      Content-Language:
+      - en
+      Content-Length:
+      - '12'
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 21 Apr 2020 21:44:30 GMT
+      ETag:
+      - '"5b2d74232aaf7e3e284ba7f9d0ecf862"'
+      Expires:
+      - Tue, 21 Apr 2020 22:44:30 GMT
+      Last-Modified:
+      - Wed, 08 Apr 2020 15:52:54 GMT
+      Server:
+      - UploadServer
+      X-GUploader-UploadID:
+      - AAANsUkxz4lxw-RCBWtZR0N4ud65Pc5guo5sO0KnOmr3FgjMfJIRX3ovWC1WCReZwCqzXx1ucCgjAwrhbqx9i1YLcyRu6VCEow
+      x-goog-generation:
+      - '1586361174590155'
+      x-goog-hash:
+      - crc32c=bUrUmw==
+      - md5=Wy10Iyqvfj4oS6f50Oz4Yg==
+      x-goog-metageneration:
+      - '1'
+      x-goog-storage-class:
+      - STANDARD
+      x-goog-stored-content-encoding:
+      - identity
+      x-goog-stored-content-length:
+      - '12'
+    status:
+      code: 200
+      message: OK
+version: 1
