@@ -41,3 +41,7 @@ pip-delete-this-directory.txt
 # Local ci pipeline development
 /.ci/creds.local.yml
 /.ci/pipeline.local.yml
+
+# Generated coverage files
+.coverage
+htmlcov/
