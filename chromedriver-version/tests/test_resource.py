@@ -41,7 +41,7 @@ class TestCheck(object):
         in_stream = make_input_stream(version)
         result = check.check(in_stream)
 
-        assert result == {"version": "81.0.4044.69"}
+        assert result == [{"version": "81.0.4044.69"}]
 
     @vcr.use_cassette("tests/cassettes/test_check.yaml")
     def test_has_same_version(self):
@@ -59,7 +59,7 @@ class TestCheck(object):
         in_stream = make_input_stream(version)
         result = check.check(in_stream)
 
-        assert result == {"version": "81.0.4044.69"}
+        assert result == [{"version": "81.0.4044.69"}]
 
 
 class TestIn(object):
