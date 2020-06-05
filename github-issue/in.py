@@ -17,29 +17,24 @@ def _in(instream):
     headers = {'Authorization': 'token ' + token}
 
     connection = requests.get(endpoint, headers=headers)
+    i = json.loads(connection.text)
 
     issue = open('./issue.json', 'w+')
-    issue.write(issue)
-    issue.read()
+    json.dump(i, issue)
     issue.close()
 
     title = open('./title.txt', 'w+')
-    title.write(source['title'])
+    title.write(i['title'])
     title.read()
     title.close()
 
-    description = open('./description.txt', 'w+')
-    description.write(source['description'])
-    description.read()
-    description.close()
-
     number = open('./number.txt', 'w+')
-    number.write(source['number'])
+    number.write(str(i['number']))
     number.read()
     number.close()
 
     body = open('./body.txt', 'w+')
-    body.write(source['body'])
+    body.write(i['body'])
     body.read()
     body.close()
 

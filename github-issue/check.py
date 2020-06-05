@@ -4,7 +4,9 @@ import requests
 import json
 import sys
 import os
+import datetime
 from pprint import pprint
+import dateutil.parser
 
 def msg(msg, *args, **kwargs):
   if isinstance(msg, dict):
@@ -12,29 +14,15 @@ def msg(msg, *args, **kwargs):
   else:
     print(msg.format(*args, **kwargs), file=sys.stderr)
 
-def get_versions():
-    if os.path.exists('versions.json'):
-        with open('versions.json', 'r') as f:
-          versions = json.load(f)
-    else:
-        versions = {'versions': []}
-        return versions
-
-def update_versions(id, versions):
-    versions['versions'] += [id]
-    with open('versions.json', 'w') as f:
-        json.dump(versions, f)
+def get_newest_dates(lst, value):
+    for index, val in enumerate(lst):
+        if val >= value:
+            return lst[index:]
+    return [lst[-1]]
 
 def _check(instream):
     payload = json.load(instream)
     source = payload['source']
-    try:
-        versions = get_versions()
-    except:
-        versions = {'versions': []}
-    msg('''CHECK
-    Versions {}
-    ''', versions)
 
     token = source['token']
     repository = source['repository']
@@ -45,11 +33,17 @@ def _check(instream):
 
     connection = requests.get(endpoint, headers=headers)
     issue = json.loads(connection.text)
-    ver = issue['updated_at']
+    # issue = connection.json
 
-    if ver not in versions['versions']:
-        update_versions(ver, versions)
-        return [{"version" : ver}]
+    if source['version']['date'] == "":
+        newest_dates = [dateutil.parser.parse(issue['updated_at'])]
+    else:
+        previous_date = dateutil.parser.parse(source['version']['date'])
+        newest_dates = get_newest_dates(newest_dates, previous_date)
+
+    newest_dates = [{"date": date.strftime("%Y-%m-%d %-H:%M:%S %Z")} for date in newest_dates]
+
+    return newest_dates
 
 if __name__ == "__main__":
     print(json.dumps(_check(sys.stdin)))    
