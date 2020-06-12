@@ -8,42 +8,34 @@ import datetime
 from pprint import pprint
 import dateutil.parser
 
-def msg(msg, *args, **kwargs):
-  if isinstance(msg, dict):
-    pprint(msg, stream=sys.stderr)
-  else:
-    print(msg.format(*args, **kwargs), file=sys.stderr)
-
-def get_newest_dates(lst, value):
-    for index, val in enumerate(lst):
-        if val >= value:
-            return lst[index:]
-    return [lst[-1]]
-
 def _check(instream):
-    payload = json.load(instream)
+    #payload = json.load(instream)
+    payload = {"source": {"token": "2650f2b08c104670ec8bac3565f08a05c9ee41a0", "repository": "openstax/devops" }}
     source = payload['source']
-
     token = source['token']
     repository = source['repository']
-    number = source['number']
+now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
+    date = now.isoformat()
 
-    endpoint = "https://api.github.com/repos/" + repository + "/issues/" + number
+    try:
+        issueNumbers
+    except NameError:
+        issueNumbers = {}
+
     headers = {'Authorization': 'token ' + token}
-
+    endpoint = "https://api.github.com/repos/" + repository + "/issues"
     connection = requests.get(endpoint, headers=headers)
-    issue = json.loads(connection.text)
-    # issue = connection.json
+    
+    if issueNumbers = {}:
+        for i in connection.json():
+            issueNumbers.update( {i['number'] : i['updated_at']})
 
-    if source['version']['date'] == "":
-        newest_dates = [dateutil.parser.parse(issue['updated_at'])]
-    else:
-        previous_date = dateutil.parser.parse(source['version']['date'])
-        newest_dates = get_newest_dates(newest_dates, previous_date)
+    for i in connection.json():
+        if i['updated_at'] > date:
+            issueNumbers.update( {i['number'] : i['updated_at']})
 
-    newest_dates = [{"date": date.strftime("%Y-%m-%d %-H:%M:%S %Z")} for date in newest_dates]
+    return issueNumbers
 
-    return newest_dates
 
 if __name__ == "__main__":
     print(json.dumps(_check(sys.stdin)))    
