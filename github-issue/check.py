@@ -10,7 +10,6 @@ import dateutil.parser
 
 def _check(instream):
     #payload = json.load(instream)
-    payload = {"source": {"token": "2650f2b08c104670ec8bac3565f08a05c9ee41a0", "repository": "openstax/devops" }}
     source = payload['source']
     token = source['token']
     repository = source['repository']
