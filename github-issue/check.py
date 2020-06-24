@@ -34,10 +34,11 @@ def _check(instream):
             issueNumbers.update( {i['number'] : i['updated_at']})
 
     sortedIssueNumbers = {k: v for k, v in sorted(issueNumbers.items(), key=lambda item: item[1])}
+    issueNumbers = sortedIssueNumbers
     lastUpdatedKey = list(sortedIssueNumbers.keys())[-1]
     lastUpdatedValue = sortedIssueNumbers[lastUpdatedKey]
     lastUpdatedIssue = {lastUpdatedKey: lastUpdatedValue}
-    return lastUpdatedIssue
+    return lastUpdatedIssue, issueNumbers
 
 if __name__ == "__main__":
     print(json.dumps(_check(sys.stdin)))    
