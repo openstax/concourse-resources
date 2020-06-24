@@ -9,11 +9,11 @@ from pprint import pprint
 import dateutil.parser
 
 def _check(instream):
-    #payload = json.load(instream)
+    payload = json.load(instream)
     source = payload['source']
     token = source['token']
     repository = source['repository']
-now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
+    now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
     date = now.isoformat()
 
     try:
@@ -24,8 +24,8 @@ now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
     headers = {'Authorization': 'token ' + token}
     endpoint = "https://api.github.com/repos/" + repository + "/issues"
     connection = requests.get(endpoint, headers=headers)
-    
-    if issueNumbers = {}:
+
+    if issueNumbers == {}:
         for i in connection.json():
             issueNumbers.update( {i['number'] : i['updated_at']})
 
@@ -33,8 +33,11 @@ now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
         if i['updated_at'] > date:
             issueNumbers.update( {i['number'] : i['updated_at']})
 
-    return issueNumbers
-
+    sortedIssueNumbers = {k: v for k, v in sorted(issueNumbers.items(), key=lambda item: item[1])}
+    lastUpdatedKey = list(sortedIssueNumbers.keys())[-1]
+    lastUpdatedValue = sortedIssueNumbers[lastUpdatedKey]
+    lastUpdatedIssue = {lastUpdatedKey: lastUpdatedValue}
+    return lastUpdatedIssue
 
 if __name__ == "__main__":
     print(json.dumps(_check(sys.stdin)))    
