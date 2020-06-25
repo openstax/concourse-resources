@@ -4,37 +4,43 @@ import requests
 import json
 import sys
 import os
+import datetime
 
 def _in(instream):
     payload = json.load(instream)
     source = payload['source']
     token = source['token']
     repository = source['repository']
-    number = list(lastUpdatedIssue.keys())[0]
-    date = lastUpdatedIssue[number]
-    endpoint = "https://api.github.com/repos/" + repository + "/issues/" + str(number)
+
+    version = payload['version']
+    versionNumber = list(version.keys())[0]
+    versionDate = version[versionNumber]
+    print(versionNumber, file=sys.stderr)
+    print(versionDate, file=sys.stderr)
+
+    endpoint = "https://api.github.com/repos/" + repository + "/issues/" + versionNumber
     headers = {'Authorization': 'token ' + token}
     connection = requests.get(endpoint, headers=headers)
+    now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
+    date = now.isoformat()
+    print(date, file=sys.stderr)
 
-    if date == connection.json()['updated_at']:
-        if not os.path.exists(str(number)):
-            os.makedirs(str(number))
-    
-        with open(str(number) + '/issue.json', 'w+') as issue:
+    if  versionDate >= date:
+        with open('issue.json', 'w+') as issue:
             json.dump(connection.text, issue)
             issue.close()
 
-        title = open(str(number) + '/title.txt', 'w+')
+        title = open('title.txt', 'w+')
         title.write(connection.json()['title'])
         title.read()
         title.close()
 
-        numfile = open(str(number) + '/number.txt', 'w+')
+        numfile = open('number.txt', 'w+')
         numfile.write(str(connection.json()['number']))
         numfile.read()
         numfile.close()
 
-        body = open(str(number) + '/body.txt', 'w+')
+        body = open('body.txt', 'w+')
         body.write(connection.json()['body'])
         body.read()
         body.close()
