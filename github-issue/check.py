@@ -38,7 +38,7 @@ def _check(instream):
     lastUpdatedKey = list(sortedIssueNumbers.keys())[-1]
     lastUpdatedValue = sortedIssueNumbers[lastUpdatedKey]
     lastUpdatedIssue = {lastUpdatedKey: lastUpdatedValue}
-    return lastUpdatedIssue, issueNumbers
+    return [{"version" : lastUpdatedIssue}]
 
 if __name__ == "__main__":
-    print(json.dumps(_check(sys.stdin)))    
+    print(json.dumps(_check(sys.stdin)))
