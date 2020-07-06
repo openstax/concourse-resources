@@ -11,10 +11,9 @@ def _in(instream):
     source = payload['source']
     token = source['token']
     repository = source['repository']
-
-    version = payload['version']
-    versionNumber = list(version.keys())[0]
-    versionDate = version[versionNumber]
+    version = [payload['version']]
+    versionNumber = version[-1]['number']
+    versionDate = version[-1]['modified']
     print(versionNumber, file=sys.stderr)
     print(versionDate, file=sys.stderr)
 
@@ -23,7 +22,6 @@ def _in(instream):
     connection = requests.get(endpoint, headers=headers)
     now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
     date = now.isoformat()
-    print(date, file=sys.stderr)
 
     if  versionDate >= date:
         with open('issue.json', 'w+') as issue:
