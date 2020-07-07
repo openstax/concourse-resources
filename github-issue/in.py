@@ -23,7 +23,7 @@ def _in(instream):
     now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
     date = now.isoformat()
 
-    if  versionDate >= date:
+    if  versionDate <= date:
         with open('issue.json', 'w+') as issue:
             json.dump(connection.text, issue)
             issue.close()
