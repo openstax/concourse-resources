@@ -8,9 +8,7 @@ Fetches Github Issue
 
 * `repository`: *Required.* The repository name [organization/name].
 
-* `number`: *Required.* The Github issue number to fetch
-
-* `version: {date: }`: *Required.* A blank list for dates for the resource to trigger on.
+* `version: {"number": <issue number> , "modified": <last modified date of issue>}`: 
 
 ### Example
 
@@ -20,8 +18,7 @@ Fetches Github Issue
   source:
     repository: 'org/repo'
     token: 'token'
-    number '1234'
-    version: {date : ''}
+  version: {"number": <number> , "modified": <date>}
 ```
 
 ``` yaml
@@ -32,7 +29,9 @@ Fetches Github Issue
 
 ### `check`: Check for new issues.
 
-Checks to see if the `updated_at` timestamp is newer than previous. 
+Checks to see if an issue has been updated recently, and if so, passes to `in`. You can specify a specific issue if needed as 
+
+A version can be passed in if needed. 
 
 ### `in`: Fetch issue data.
 
