@@ -8,14 +8,13 @@ import datetime
 
 def _in(instream):
     payload = json.load(instream)
+    path = str(sys.argv[1])
     source = payload['source']
     token = source['token']
     repository = source['repository']
     version = [payload['version']]
     versionNumber = version[-1]['number']
     versionDate = version[-1]['modified']
-    print(versionNumber, file=sys.stderr)
-    print(versionDate, file=sys.stderr)
 
     endpoint = "https://api.github.com/repos/" + repository + "/issues/" + versionNumber
     headers = {'Authorization': 'token ' + token}
@@ -24,21 +23,21 @@ def _in(instream):
     date = now.isoformat()
 
     if  versionDate >= date:
-        with open('issue.json', 'w+') as issue:
+        with open(path + '/issue.json', 'w+') as issue:
             json.dump(connection.text, issue)
             issue.close()
 
-        title = open('title.txt', 'w+')
+        title = open(path + '/title.txt', 'w+')
         title.write(connection.json()['title'])
         title.read()
         title.close()
 
-        numfile = open('number.txt', 'w+')
+        numfile = open(path + '/number.txt', 'w+')
         numfile.write(str(connection.json()['number']))
         numfile.read()
         numfile.close()
 
-        body = open('body.txt', 'w+')
+        body = open(path + '/body.txt', 'w+')
         body.write(connection.json()['body'])
         body.read()
         body.close()
