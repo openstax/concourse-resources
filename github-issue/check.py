@@ -13,46 +13,30 @@ def _check(instream):
     source = payload['source']
     token = source['token']
     repository = source['repository']
-    try:
-        version = [payload['version']]
-    except (KeyError,NameError):
-        version = []
+    
+    if 'version' in payload:
+        since = '&since=' + payload['version']['modified']
+    else:
+        since = ''
 
     headers = {'Authorization': 'token ' + token}
-
-    # first get the last page if it exists
-    endpoint = "https://api.github.com/repos/" + repository + "/issues?sort=updated&direction=asc"
+    endpoint = "https://api.github.com/repos/" + repository + "/issues?sort=updated&direction=desc" + since
     connection = requests.get(endpoint, headers=headers)
-    link = connection.headers.get('link')
-    if link is not None:
-        links = link.split(',')
-        for link in links:
-            if 'rel="last"' in link:
-                endpoint = link[link.find("<")+1:link.find(">")]
 
-    if version is None:
-        version = []
+    issues = connection.json()
+    issues.reverse()
+
+    results = []
     
-    if version == []:
-        connection = requests.get(endpoint, headers=headers)
-        number = connection.json()[-1]['number']
-        updated_at = connection.json()[-1]['updated_at']
-        version.append( {"number": str(number), "modified": updated_at})
-        latest_issue = version
-        return latest_issue
-
+    if 'version' in payload:
+        for i in issues:
+            results.append({"number": str(i['number']), "modified": i['updated_at']})
     else:
-        last_modified = version[-1]['modified']
-        dates = {v['modified'] for v in version}
-        endpoint = "https://api.github.com/repos/" + repository + "/issues?sort=updated&direction=asc&since=" + last_modified
-        connection = requests.get(endpoint, headers=headers)
-        for i in connection.json():
-            if i['updated_at'] in dates:
-                continue
-            version.append({"number": str(i['number']), "modified": i['updated_at']})
-            dates.add(i['updated_at'])
-        issues_updated_since = version
-        return issues_updated_since
+        latest = issues[-1]
+        if latest:
+            results.append({"number": str(latest['number']), "modified": latest['updated_at']})
+
+    return results
 
 if __name__ == "__main__":
     print(json.dumps(_check(sys.stdin)))
