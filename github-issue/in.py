@@ -19,10 +19,10 @@ def _in(instream):
     endpoint = "https://api.github.com/repos/" + repository + "/issues/" + versionNumber
     headers = {'Authorization': 'token ' + token}
     connection = requests.get(endpoint, headers=headers)
-    now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
-    date = now.isoformat()
+    #now = datetime.datetime.now() - datetime.timedelta(seconds = 180)
+    date = connection.json()['updated_at']
 
-    if  versionDate >= date:
+    if  versionDate == date:
         with open(path + '/issue.json', 'w+') as issue:
             json.dump(connection.text, issue)
             issue.close()
