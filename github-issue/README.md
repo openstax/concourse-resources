@@ -8,8 +8,6 @@ Fetches Github Issue
 
 * `repository`: *Required.* The repository name [organization/name].
 
-* `version: {"number": <issue number> , "modified": <last modified date of issue>}`: 
-
 ### Example
 
 ``` yaml
@@ -18,7 +16,6 @@ Fetches Github Issue
   source:
     repository: 'org/repo'
     token: 'token'
-  version: {"number": <number> , "modified": <date>}
 ```
 
 ``` yaml
@@ -29,9 +26,7 @@ Fetches Github Issue
 
 ### `check`: Check for new issues.
 
-Checks to see if an issue has been updated recently, and if so, passes to `in`. You can specify a specific issue if needed as 
-
-A version can be passed in if needed. 
+Checks to see if any issues have been updated or created, and if so, passes to `in`. 
 
 ### `in`: Fetch issue data.
 
