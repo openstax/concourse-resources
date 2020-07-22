@@ -8,6 +8,8 @@ Fetches Github Issue
 
 * `repository`: *Required.* The repository name [organization/name].
 
+* `params`: _optional._ Any parameter except since, direction, or sort from https://developer.github.com/v3/issues/#parameters-3
+
 ### Example
 
 ``` yaml
@@ -16,6 +18,8 @@ Fetches Github Issue
   source:
     repository: 'org/repo'
     token: 'token'
+    params:
+      labels: release
 ```
 
 ``` yaml
