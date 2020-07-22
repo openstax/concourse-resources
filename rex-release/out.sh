@@ -30,7 +30,7 @@ upload-release() {
   version=$2
 
   # everything outside books gets uploaded nicely and can have long cache becaue it is loaded from versioned url
-  aws s3 sync --exclude 'books/*' --include 'service-worker.js' --cache-control 'max-age=31536000'  "$path" "s3://$bucket/rex/releases/$version"
+  aws s3 sync --exclude 'books/*' --cache-control 'max-age=31536000'  "$path" "s3://$bucket/rex/releases/$version"
 
   # service worker uploaded separately to have the right content-type, loaded unversioned so no cloudfront caching
   aws s3 sync --exclude '*' --include 'service-worker.js' --cache-control 'max-age=0'  "$path/books/" "s3://$bucket/rex/releases/$version/books"
