@@ -15,7 +15,7 @@ def _check(instream):
     token = source['token']
     repository = source['repository']
     params = source.get('params', {})
-    
+
     if 'version' in payload:
         params['since'] = payload['version']['modified']
 
@@ -33,8 +33,8 @@ def _check(instream):
 
     # if version is not provided only return the most recent entry
     if 'version' not in payload:
-        issues = issues[-1:] 
-    
+        issues = issues[-1:]
+
     for i in issues:
         results.append({"number": str(i['number']), "modified": i['updated_at']})
 
