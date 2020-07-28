@@ -16,24 +16,11 @@ payload=$(mktemp /tmp/resource-in.XXXXXX)
 cat > "$payload" <&0
 
 bucket=$(jq -r '.source.bucket | select (.!=null)' < "$payload")
-mode=$(jq -r '.source.mode | select (.!=null)' < "$payload")
 aws_access_key_id=$(jq -r '.source.access_key_id' < "$payload")
 aws_secret_access_key=$(jq -r '.source.secret_access_key' < "$payload")
 export AWS_ACCESS_KEY_ID=$aws_access_key_id
 export AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
 
-
-if [ "$mode" = "multiple" ]; then
-  versions=$(jq -r '(.version.ids // "") | split(",") | join(" ")' < "$payload")
-
-  for version in $versions
-  do
-    aws s3 cp "s3://$bucket/rex/releases/$version/rex/release.json" "$outdir/${version/\//-}/rex/release.json"
-  done;
-
-  jq -n "{version: {ids: \"$versions\"}}" >&3
-else
-  version=$(jq -r '.version.id | select (.!=null)' < "$payload")
-  aws s3 cp "s3://$bucket/rex/releases/$version/rex/release.json" "$outdir/rex/release.json"
-  jq -n "{version: {id: \"$version\"}}" >&3
-fi;
+version=$(jq -r '.version.id | select (.!=null)' < "$payload")
+aws s3 cp "s3://$bucket/rex/releases/$version/rex/release.json" "$outdir/rex/release.json"
+jq -n "{version: {id: \"$version\"}}" >&3
