@@ -10,22 +10,17 @@ cat > "$payload" <&0
 
 bucket=$(jq -r '.source.bucket | select (.!=null)' < "$payload")
 prefix=$(jq -r '.source.prefix | select (.!=null)' < "$payload")
-mode=$(jq -r '.source.mode | select (.!=null)' < "$payload")
 version=$(jq -r '.version.id | select (.!=null)' < "$payload")
 aws_access_key_id=$(jq -r '.source.access_key_id' < "$payload")
 aws_secret_access_key=$(jq -r '.source.secret_access_key' < "$payload")
 export AWS_ACCESS_KEY_ID=$aws_access_key_id
 export AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
 
-if [ "$mode" = "multiple" ]; then
-  echo "check is not supported on multiple release resource"
-  exit 1;
-fi;
-
 results=$(aws s3api list-objects --bucket "$bucket" --prefix "rex/releases/$prefix")
+default_results={}
 
 # only the release.json files, most recent on the top
-results=$(echo "$results" | jq ".Contents | map(select(.Key | endswith(\"/rex/release.json\"))) | sort_by(.LastModified) | reverse")
+results=$(echo "${results:-$default_results}" | jq ".Contents // [] | map(select(.Key | endswith(\"/rex/release.json\"))) | sort_by(.LastModified) | reverse")
 
 after=""
 
