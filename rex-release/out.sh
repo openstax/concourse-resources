@@ -18,7 +18,7 @@ payload=$(mktemp /tmp/resource-in.XXXXXX)
 cat > "$payload" <&0
 
 dir=$(jq -r '.params.path | select (.!=null)' < "$payload")
-mode=$(jq -r '.source.mode | select (.!=null)' < "$payload")
+checkout=$(jq -r '.params.checkout | select (.!=null)' < "$payload")
 bucket=$(jq -r '.source.bucket | select (.!=null)' < "$payload")
 aws_access_key_id=$(jq -r '.source.access_key_id' < "$payload")
 aws_secret_access_key=$(jq -r '.source.secret_access_key' < "$payload")
@@ -28,6 +28,16 @@ export AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
 upload-release() {
   path=$1
   version=$2
+
+  if [ -z "$path" ]; then
+    echo "path must be provided"
+    exit 1;
+  fi
+
+  if aws s3api get-object --bucket "$bucket" --key "rex/releases/$version/rex/release.json" /dev/null > /dev/null 2>&1; then
+    echo "release $version already exists, aborting"
+    exit 1;
+  fi;
 
   # everything outside books gets uploaded nicely and can have long cache becaue it is loaded from versioned url
   aws s3 sync --exclude 'books/*' --cache-control 'max-age=31536000'  "$path" "s3://$bucket/rex/releases/$version"
@@ -40,19 +50,8 @@ upload-release() {
 }
 
 
-if [ "$mode" = "multiple" ]; then
-  versions_array=()
-
-  for release_dir in "$dir"/*
-  do
-    version=$(jq -r '.id | select (.!=null)' < "$release_dir"/rex/release.json)
-    versions_array+=("$version")
-    upload-release "$release_dir" "$version"
-  done;
-
-  versions=$(IFS=, ; echo "${versions[*]}")
-
-  jq -n "{version: {ids: \"$versions\"}}" >&3
+if [ "$checkout" ]; then
+  jq -n "{version: {id: \"$checkout\"}}" >&3
 else
   version=$(jq -r '.id | select (.!=null)' < "$dir"/rex/release.json)
   upload-release "$dir" "$version"
