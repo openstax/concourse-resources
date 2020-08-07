@@ -17,6 +17,6 @@ cat > "$payload" <&0
 
 version=$(jq -r '.version.id | select (.!=null)' < "$payload")
 
-echo "$version" > "$outdir/version.txt"
+echo -n "$version" > "$outdir/version.txt"
 
 jq -n "{version: {id: \"$version\"}}" >&3

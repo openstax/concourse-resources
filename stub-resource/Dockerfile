@@ -1,4 +1,4 @@
-FROM alpine 
+FROM alpine
 
 RUN apk --no-cache update && \
   apk --no-cache add jq bash && \
