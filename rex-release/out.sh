@@ -47,6 +47,20 @@ upload-release() {
 
   # books files with explicit content type set because they don't have extensions, loaded unversioned so no cloudfront caching
   aws s3 sync --exclude 'service-worker.js' --content-type 'text/html' --cache-control 'max-age=0' "$path/books/" "s3://$bucket/rex/releases/$version/books"
+
+  # configure redirects
+  for row in $(cat $path/rex/redirects.json | jq -r '.[] | @base64'); do
+    getField() {
+      echo ${row} | base64 --decode | jq -r ${1}
+    }
+
+    from=$(echo $(getField '.from'))
+    to=$(echo $(getField '.to'))
+
+    if [ ! -e "$path/${from}" ] && [ -e "$path/${to}" ]; then
+      aws s3api put-object --bucket $from --key $from-key --website-redirect-location $to
+    fi
+  done
 }
 
 
