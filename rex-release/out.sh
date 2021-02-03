@@ -49,16 +49,18 @@ upload-release() {
   aws s3 sync --exclude 'service-worker.js' --content-type 'text/html' --cache-control 'max-age=0' "$path/books/" "s3://$bucket/rex/releases/$version/books"
 
   # configure redirects
-  for row in $(cat $path/rex/redirects.json | jq -r '.[] | @base64'); do
+  for row in $(cat $path/rex/redirects.json | jq -r -c '.[]'); do
     getField() {
-      echo ${row} | base64 --decode | jq -r ${1}
+      echo ${row} | jq -r ${1}
     }
 
     from=$(echo $(getField '.from'))
     to=$(echo $(getField '.to'))
 
-    if [ ! -e "$path/${from}" ] && [ -e "$path/${to}" ]; then
-      aws s3api put-object --bucket $from --key $from-key --website-redirect-location $to
+    if [ ! -e "$path/$from" ] && [ -e "$path/$to" ]; then
+      aws s3api put-object --bucket "$bucket" --key "$from" --website-redirect-location "$to"
+    else
+      echo "cannot create redirection from $from to $to"
     fi
   done
 }
