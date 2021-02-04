@@ -43,7 +43,7 @@ upload-release() {
     from=$(jq -r '.from' <<< "$row")
     to=$(jq -r '.to' <<< "$row")
 
-    if [ ! -e "$path/$from" ] && [ -e "$path/$to" ]; then
+    if [ -e "$path/$from" ] || [ ! -e "$path/$to" ]; then
       echo "cannot create redirection from $from to $to, aborting"
       exit 1;
     fi
