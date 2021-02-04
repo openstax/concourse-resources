@@ -39,6 +39,16 @@ upload-release() {
     exit 1;
   fi;
 
+  for row in $(jq -c '.[]' < $path/rex/redirects.json); do
+    from=$(jq -r '.from' <<< "$row")
+    to=$(jq -r '.to' <<< "$row")
+
+    if [ ! -e "$path/$from" ] && [ -e "$path/$to" ]; then
+      echo "cannot create redirection from $from to $to, aborting"
+      exit 1;
+    fi
+  done
+
   # everything outside books gets uploaded nicely and can have long cache becaue it is loaded from versioned url
   aws s3 sync --exclude 'books/*' --cache-control 'max-age=31536000'  "$path" "s3://$bucket/rex/releases/$version"
 
@@ -49,19 +59,10 @@ upload-release() {
   aws s3 sync --exclude 'service-worker.js' --content-type 'text/html' --cache-control 'max-age=0' "$path/books/" "s3://$bucket/rex/releases/$version/books"
 
   # configure redirects
-  for row in $(cat $path/rex/redirects.json | jq -r -c '.[]'); do
-    getField() {
-      echo ${row} | jq -r ${1}
-    }
-
-    from=$(echo $(getField '.from'))
-    to=$(echo $(getField '.to'))
-
-    if [ ! -e "$path/$from" ] && [ -e "$path/$to" ]; then
-      aws s3api put-object --bucket "$bucket" --key "$from" --website-redirect-location "$to"
-    else
-      echo "cannot create redirection from $from to $to"
-    fi
+  for row in $(jq -c '.[]' < $path/rex/redirects.json); do
+    from=$(jq -r '.from' <<< "$row")
+    to=$(jq -r '.to' <<< "$row")
+    aws s3api put-object --bucket "$bucket" --key "$from" --website-redirect-location "$to"
   done
 }
 
