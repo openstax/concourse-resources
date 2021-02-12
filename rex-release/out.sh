@@ -62,7 +62,7 @@ upload-release() {
   for row in $(jq -c '.[]' < $path/rex/redirects.json); do
     from=$(jq -r '.from' <<< "$row")
     to=$(jq -r '.to' <<< "$row")
-    aws s3api put-object --bucket "$bucket" --key "$from" --website-redirect-location "$to"
+    aws s3api put-object --bucket "$bucket" --key "rex/releases/$version$from" --website-redirect-location "$to"
   done
 }
 
