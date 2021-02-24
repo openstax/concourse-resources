@@ -59,11 +59,11 @@ upload-release() {
   aws s3 sync --exclude 'service-worker.js' --content-type 'text/html' --cache-control 'max-age=0' "$path/books/" "s3://$bucket/rex/releases/$version/books"
 
   # configure redirects
-  for row in $(jq -c '.[]' < $path/rex/redirects.json); do
+  while read -r row; do
     from=$(jq -r '.from' <<< "$row")
     to=$(jq -r '.to' <<< "$row")
     aws s3api put-object --bucket "$bucket" --key "rex/releases/$version$from" --website-redirect-location "$to"
-  done
+  done < <(jq -c '.[]' < $path/rex/redirects.json)
 }
 
 
