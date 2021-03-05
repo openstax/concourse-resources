@@ -39,7 +39,7 @@ upload-release() {
     exit 1;
   fi;
 
-  for row in $(jq -c '.[]' < $path/rex/redirects.json); do
+  while read -r row; do
     from=$(jq -r '.from' <<< "$row")
     to=$(jq -r '.to' <<< "$row")
 
@@ -47,7 +47,7 @@ upload-release() {
       echo "cannot create redirection from $from to $to, aborting"
       exit 1;
     fi
-  done
+  done < <(jq -c '.[]' < $path/rex/redirects.json)
 
   # everything outside books gets uploaded nicely and can have long cache becaue it is loaded from versioned url
   aws s3 sync --exclude 'books/*' --cache-control 'max-age=31536000'  "$path" "s3://$bucket/rex/releases/$version"
