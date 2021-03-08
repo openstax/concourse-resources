@@ -39,6 +39,16 @@ upload-release() {
     exit 1;
   fi;
 
+  while read -r row; do
+    from=$(jq -r '.from' <<< "$row")
+    to=$(jq -r '.to' <<< "$row")
+
+    if [ -e "$path$from" ] || [ ! -e "$path$to" ]; then
+      echo "cannot create redirection from $from to $to, aborting"
+      exit 1;
+    fi
+  done < <(jq -c '.[]' < $path/rex/redirects.json)
+
   # everything outside books gets uploaded nicely and can have long cache becaue it is loaded from versioned url
   aws s3 sync --exclude 'books/*' --cache-control 'max-age=31536000'  "$path" "s3://$bucket/rex/releases/$version"
 
@@ -47,6 +57,13 @@ upload-release() {
 
   # books files with explicit content type set because they don't have extensions, loaded unversioned so no cloudfront caching
   aws s3 sync --exclude 'service-worker.js' --content-type 'text/html' --cache-control 'max-age=0' "$path/books/" "s3://$bucket/rex/releases/$version/books"
+
+  # configure redirects
+  while read -r row; do
+    from=$(jq -r '.from' <<< "$row")
+    to=$(jq -r '.to' <<< "$row")
+    aws s3api put-object --bucket "$bucket" --key "rex/releases/$version$from" --website-redirect-location "$to"
+  done < <(jq -c '.[]' < $path/rex/redirects.json)
 }
 
 
