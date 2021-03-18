@@ -6,13 +6,12 @@ const fetch = require("node-fetch");
 const stdin = fs.readFileSync(0, 'utf-8');
 const config = JSON.parse(stdin);
 
-const username = config.source.username;
-const password = config.source.password;
+const token = config.source.token;
 const repo = config.source.repository;
 
 const endpoint = `https://api.github.com/repos/${repo}/milestones`;
 const headers = {
-  'Authorization': 'Basic ' + Buffer.from(username + ':' + password).toString('base64')
+  'Authorization': 'token ' + Buffer.from(token).toString('base64')
 }
 
 const filterAfter = milestones => {
