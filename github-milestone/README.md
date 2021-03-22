@@ -4,9 +4,7 @@ Fetches Github Milestone
 
 ## Source Configuration
 
-* `username`: *Required.* github username.
-
-* `password`: *Required.* github password.
+* `token`: *Required.* github token.
 
 * `repository`: *Required.* The repository name [organization/name].
 
@@ -19,8 +17,7 @@ Fetches Github Milestone
   type: github-milestone
   source:
     repository: org/repo
-    username: user
-    password: pass
+    token: abcdtoken
 ```
 
 ``` yaml
