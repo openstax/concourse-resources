@@ -10,6 +10,8 @@ Fetches Github Issue
 
 * `params`: _optional._ Any parameter except since, direction, or sort from https://developer.github.com/v3/issues/#parameters-3
 
+* `number`: _optional._ An issue number, tracks revisions of a single issue, ignores `params` 
+
 ### Example
 
 ``` yaml
