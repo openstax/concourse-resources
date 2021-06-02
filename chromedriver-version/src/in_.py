@@ -10,7 +10,7 @@ def in_(dest_path, in_stream):
     input = json.load(in_stream)
     msg("Input: {}", input)
 
-    version = get_chromedriver_version()
+    version = input["version"]["version"]
     msg("Version Returned: {}", version)
 
     # Write out files
