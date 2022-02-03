@@ -25,6 +25,12 @@ aws_secret_access_key=$(jq -r '.source.secret_access_key' < "$payload")
 export AWS_ACCESS_KEY_ID=$aws_access_key_id
 export AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
 
+# Returns the object metadata if it exists or a blank string otherwise
+# || true is used to prevent the script from exiting due to set -e but still returns a blank string
+release-file-exists() {
+  aws s3api head-object --bucket "$bucket" --key "rex/releases/$1$2" 2>/dev/null || true
+}
+
 upload-release() {
   path=$1
   version=$2
@@ -39,16 +45,6 @@ upload-release() {
     exit 1;
   fi;
 
-  while read -r row; do
-    from=$(jq -r '.from' <<< "$row")
-    to=$(jq -r '.to' <<< "$row")
-
-    if [ -e "$path$from" ] || [ ! -e "$path$to" ]; then
-      echo "cannot create redirection from $from to $to, aborting"
-      exit 1;
-    fi
-  done < <(jq -c '.[]' < $path/rex/redirects.json)
-
   # everything outside books gets uploaded nicely and can have long cache becaue it is loaded from versioned url
   aws s3 sync --exclude 'books/*' --cache-control 'max-age=31536000'  "$path" "s3://$bucket/rex/releases/$version"
 
@@ -62,8 +58,17 @@ upload-release() {
   while read -r row; do
     from=$(jq -r '.from' <<< "$row")
     to=$(jq -r '.to' <<< "$row")
+
+    from_exists=$(release-file-exists "$version" "$from")
+    to_exists=$(release-file-exists "$version" "$to")
+
+    if [ -n "$from_exists" ] || [ -z "$to_exists" ]; then
+      echo "cannot create redirection from $from to $to, aborting"
+      exit 1;
+    fi
+
     aws s3api put-object --bucket "$bucket" --key "rex/releases/$version$from" --website-redirect-location "$to"
-  done < <(jq -c '.[]' < $path/rex/redirects.json)
+  done < <(jq -c '.[]' < "$path/rex/redirects.json")
 }
 
 
@@ -74,5 +79,3 @@ else
   upload-release "$dir" "$version"
   jq -n "{version: {id: \"$version\"}}" >&3
 fi;
-
-
