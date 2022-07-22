@@ -17,6 +17,7 @@ payload=$(mktemp /tmp/resource-in.XXXXXX)
 
 cat > "$payload" <&0
 
+q="\?"
 dir=$(jq -r '.params.path | select (.!=null)' < "$payload")
 checkout=$(jq -r '.params.checkout | select (.!=null)' < "$payload")
 bucket=$(jq -r '.source.bucket | select (.!=null)' < "$payload")
@@ -60,7 +61,7 @@ upload-release() {
     to=$(jq -r '.to' <<< "$row")
 
     from_exists=$(release-file-exists "$version" "$from")
-    to_exists=$(release-file-exists "$version" "$to")
+    to_exists=$(release-file-exists "$version" "${to%$q*}")
 
     if [ -n "$from_exists" ] || [ -z "$to_exists" ]; then
       echo "cannot create redirection from $from to $to, aborting"
