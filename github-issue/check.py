@@ -16,14 +16,14 @@ def _check_single(payload):
     number = source['number']
 
     headers = {'Authorization': 'token ' + token}
-    endpoint = "https://api.github.com/repos/" + repository + "/issues/" + number
+    endpoint = "https://api.github.com/repos/" + repository + "/issues/" + str(number)
     connection = requests.get(endpoint, headers=headers)
     issue = connection.json()
 
     if 'version' in payload and payload['version']['modified'] == issue['updated_at']:
         return []
 
-    return [{number: number, modified: issue['updated_at']}]
+    return [{"number": str(number), "modified": issue['updated_at']}]
 
 def _check_set(payload):
     source = payload['source']
