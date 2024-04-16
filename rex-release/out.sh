@@ -63,7 +63,7 @@ upload-release() {
     from_exists=$(release-file-exists "$version" "$from")
     to_exists=$(release-file-exists "$version" "${to%$q*}")
 
-    if [ -n "$from_exists" ] || [ -z "$to_exists" ]; then
+    if [ -n "$from_exists" ] || { [[ "$to" == /books* ]] && [ -z "$to_exists" ]; }; then
       echo "cannot create redirection from $from to $to, aborting"
       exit 1;
     fi
