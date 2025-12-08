@@ -55,21 +55,45 @@ upload-release() {
   # books files with explicit content type set because they don't have extensions, loaded unversioned so no cloudfront caching
   aws s3 sync --exclude 'service-worker.js' --content-type 'text/html' --cache-control 'max-age=0' "$path/books/" "s3://$bucket/rex/releases/$version/books"
 
-  # configure redirects
+  # upload redirects in parallel, limited by MAX_S3_CONCURRENCY (default 10)
+  MAX_S3_CONCURRENCY=${MAX_S3_CONCURRENCY:-10}
+  s3_pids=()
+
+  # wait for the first pid in s3_pids and remove it from the array
+  wait_pop_s3_pid() {
+    wait "${s3_pids[0]}" || {
+      echo "one of the s3 put-object commands failed"
+      exit 1
+    }
+    s3_pids=("${s3_pids[@]:1}")
+  }
+
   while read -r row; do
     from=$(jq -r '.from' <<< "$row")
     to=$(jq -r '.to' <<< "$row")
 
     from_exists=$(release-file-exists "$version" "$from")
-    to_exists=$(release-file-exists "$version" "${to%$q*}")
+    to_exists=$(release-file-exists "$version" "${to%"$q"*}")
 
     if [ -n "$from_exists" ] || { [[ "$to" == /books* ]] && [ -z "$to_exists" ]; }; then
       echo "cannot create redirection from $from to $to, aborting"
       exit 1;
     fi
 
-    aws s3api put-object --bucket "$bucket" --key "rex/releases/$version$from" --website-redirect-location "$to"
+    aws s3api put-object --bucket "$bucket" --key "rex/releases/$version$from" --website-redirect-location "$to" &
+
+    s3_pids+=("$!")
+
+    # if we reached concurrency limit, wait for the oldest to finish
+    while [ "${#s3_pids[@]}" -ge "$MAX_S3_CONCURRENCY" ]; do
+      wait_pop_s3_pid
+    done
   done < <(jq -c '.[]' < "$path/rex/redirects.json")
+
+  # wait for remaining background jobs and ensure they succeeded
+  while [ "${#s3_pids[@]}" -gt 0 ]; do
+    wait_pop_s3_pid
+  done
 }
 
 
