@@ -59,6 +59,9 @@ upload-release() {
   MAX_S3_CONCURRENCY=${MAX_S3_CONCURRENCY:-10}
   s3_pids=()
 
+  # track redirects we've created
+  created_from_redirects=()
+
   # wait for the first pid in s3_pids and remove it from the array
   wait_pop_s3_pid() {
     wait "${s3_pids[0]}" || {
@@ -68,17 +71,19 @@ upload-release() {
     s3_pids=("${s3_pids[@]:1}")
   }
 
+  # process_redirect: $1=version $2=from $3=to $4=skip_to_check (true/false)
   process_redirect() {
     version="$1"
-    row="$2"
-
-    from=$(jq -r '.from' <<< "$row")
-    to=$(jq -r '.to' <<< "$row")
+    from="$2"
+    to="$3"
+    skip_to_check="$4"
 
     from_exists=$(release-file-exists "$version" "$from")
-    to_exists=$(release-file-exists "$version" "${to%"$q"*}")
 
-    if [ -n "$from_exists" ] || { [[ "$to" == /books* ]] && [ -z "$to_exists" ]; }; then
+    if [ -n "$from_exists" ] || {
+      [ "$skip_to_check" != "true" ] &&
+      [ -z "$(release-file-exists "$version" "${to%"$q"*}")" ]
+    }; then
       echo "cannot create redirection from $from to $to, aborting" >&2
       exit 1
     fi
@@ -87,9 +92,22 @@ upload-release() {
   }
 
   while read -r row; do
-    process_redirect "$version" "$row" &
+    from=$(jq -r '.from' <<< "$row")
+    to=$(jq -r '.to' <<< "$row")
+
+    # skip the "to" existence check when "to" does not start with /books
+    # or when we've already created that redirect in this run
+    if [[ "$to" != /books* ]] ||
+       [[ " ${created_from_redirects[*]} " == *" ${to%"$q"*} "* ]]; then
+      skip_to_check="true"
+    else
+      skip_to_check="false"
+    fi
+
+    process_redirect "$version" "$from" "$to" "$skip_to_check" &
 
     s3_pids+=("$!")
+    created_from_redirects+=("$from")
 
     # if we reached concurrency limit, wait for the oldest to finish
     while [ "${#s3_pids[@]}" -ge "$MAX_S3_CONCURRENCY" ]; do
