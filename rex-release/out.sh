@@ -17,7 +17,7 @@ payload=$(mktemp /tmp/resource-in.XXXXXX)
 
 cat > "$payload" <&0
 
-q="\?"
+q="?"
 dir=$(jq -r '.params.path | select (.!=null)' < "$payload")
 checkout=$(jq -r '.params.checkout | select (.!=null)' < "$payload")
 bucket=$(jq -r '.source.bucket | select (.!=null)' < "$payload")
