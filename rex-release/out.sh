@@ -68,7 +68,10 @@ upload-release() {
     s3_pids=("${s3_pids[@]:1}")
   }
 
-  while read -r row; do
+  process_redirect() {
+    version="$1"
+    row="$2"
+
     from=$(jq -r '.from' <<< "$row")
     to=$(jq -r '.to' <<< "$row")
 
@@ -76,11 +79,15 @@ upload-release() {
     to_exists=$(release-file-exists "$version" "${to%"$q"*}")
 
     if [ -n "$from_exists" ] || { [[ "$to" == /books* ]] && [ -z "$to_exists" ]; }; then
-      echo "cannot create redirection from $from to $to, aborting"
-      exit 1;
+      echo "cannot create redirection from $from to $to, aborting" >&2
+      exit 1
     fi
 
-    aws s3api put-object --bucket "$bucket" --key "rex/releases/$version$from" --website-redirect-location "$to" &
+    aws s3api put-object --bucket "$bucket" --key "rex/releases/$version$from" --website-redirect-location "$to"
+  }
+
+  while read -r row; do
+    process_redirect "$version" "$row" &
 
     s3_pids+=("$!")
 
