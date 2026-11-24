@@ -41,6 +41,9 @@ def _in(instream):
         body.read()
         body.close()
 
+        # Concourse 8 fails the get unless the script prints the version it fetched
+        return {"version": payload['version']}
+
     else:
         print("Dates do not match", file=sys.stderr)
         sys.exit(1)
