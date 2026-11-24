@@ -4,7 +4,8 @@
 #
 # Usage: redirects.py BUCKET VERSION REDIRECTS_JSON
 #
-# Checks every redirect first, before creating any of them.
+# Checks every redirect first, before creating any of them. A redirect that already exists with
+# the same target is skipped, so a release whose upload failed partway can be uploaded again.
 # Then creates them in parallel with one shared S3 client so we don't pay the python startup cost per object.
 
 import json
@@ -24,17 +25,31 @@ def list_keys(s3, bucket, prefix):
             yield item['Key']
 
 
-def find_errors(redirects, release_prefix, existing_keys):
+def redirect_locations_by_key(s3, bucket, keys, executor):
+    def redirect_location(key):
+        # Objects that aren't redirects have no WebsiteRedirectLocation
+        return s3.head_object(Bucket=bucket, Key=key).get('WebsiteRedirectLocation')
+
+    return dict(zip(keys, executor.map(redirect_location, keys)))
+
+
+def find_errors(redirects, release_prefix, existing_keys, existing_locations_by_key):
     errors = []
     created_paths = set()
 
     for redirect in redirects:
         from_path = redirect['from']
         to = redirect['to']
+        from_key = release_prefix + from_path
         # The target file is the target without its query string
         to_path = to.rsplit('?', 1)[0]
 
-        if release_prefix + from_path in existing_keys or from_path in created_paths:
+        if from_path in created_paths:
+            errors.append('cannot create redirection from {} to {}: {} is redirected twice'.format(
+                from_path, to, from_path))
+        # An earlier upload of this release may have created the same redirect already. Anything
+        # else at that path, such as an uploaded file or a different redirect, is an error.
+        elif from_key in existing_keys and existing_locations_by_key[from_key] != to:
             errors.append('cannot create redirection from {} to {}: {} already exists'.format(
                 from_path, to, from_path))
         # Only targets under /books must exist, either as an uploaded file or as a redirect
@@ -60,25 +75,34 @@ def main(bucket, version, redirects_path):
 
     existing_keys = set(list_keys(s3, bucket, release_prefix + '/'))
 
-    errors = find_errors(redirects, release_prefix, existing_keys)
-    if errors:
-        for error in errors:
-            print(error, file=sys.stderr)
-        print('aborting without creating any redirects', file=sys.stderr)
-        sys.exit(1)
-
     def create_redirect(redirect):
         s3.put_object(Bucket=bucket, Key=release_prefix + redirect['from'],
                       WebsiteRedirectLocation=redirect['to'])
 
-    print('creating {} redirects'.format(len(redirects)), file=sys.stderr)
-
     with ThreadPoolExecutor(max_workers=CONCURRENCY) as executor:
+        existing_from_keys = [release_prefix + redirect['from'] for redirect in redirects
+                              if release_prefix + redirect['from'] in existing_keys]
+        existing_locations_by_key = redirect_locations_by_key(
+            s3, bucket, existing_from_keys, executor)
+
+        errors = find_errors(redirects, release_prefix, existing_keys, existing_locations_by_key)
+        if errors:
+            for error in errors:
+                print(error, file=sys.stderr)
+            print('aborting without creating any redirects', file=sys.stderr)
+            sys.exit(1)
+
+        new_redirects = [redirect for redirect in redirects
+                         if release_prefix + redirect['from'] not in existing_keys]
+
+        print('creating {} redirects ({} already exist)'.format(
+            len(new_redirects), len(redirects) - len(new_redirects)), file=sys.stderr)
+
         # Consuming the results raises the first failed request's error
-        for _ in executor.map(create_redirect, redirects):
+        for _ in executor.map(create_redirect, new_redirects):
             pass
 
-    print('created {} redirects'.format(len(redirects)), file=sys.stderr)
+    print('created {} redirects'.format(len(new_redirects)), file=sys.stderr)
 
 
 if __name__ == '__main__':

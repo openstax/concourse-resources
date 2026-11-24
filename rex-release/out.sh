@@ -34,6 +34,8 @@ upload-release() {
     exit 1;
   fi
 
+  # release.json is uploaded last, so it only exists once the whole release has been uploaded.
+  # If an earlier upload failed partway, this upload goes ahead and finishes it.
   if aws s3api get-object --bucket "$bucket" --key "rex/releases/$version/rex/release.json" /dev/null > /dev/null 2>&1; then
     echo "release $version already exists, aborting"
     exit 1;
@@ -41,10 +43,6 @@ upload-release() {
 
   # everything outside books except release.json gets uploaded with long cache because it is loaded from versioned url
   aws s3 sync --exclude 'books/*' --exclude 'rex/release.json' --cache-control 'max-age=31536000' "$path" "s3://$bucket/rex/releases/$version"
-
-  # release.json uploaded separately with 1 hour max-age for browser (cache header reused by /rex/release.json route)
-  # does not affect CloudFront (TTL is set to 0)
-  aws s3 cp --cache-control 'max-age=3600' --content-type 'application/json' "$path/rex/release.json" "s3://$bucket/rex/releases/$version/rex/release.json"
 
   # service worker uploaded separately to have the right content-type, loaded unversioned so no cloudfront caching
   aws s3 sync --exclude '*' --include 'service-worker.js' --cache-control 'max-age=0'  "$path/books/" "s3://$bucket/rex/releases/$version/books"
@@ -54,6 +52,10 @@ upload-release() {
 
   # redirects are empty objects with a website redirect location
   python3 /opt/resource/redirects.py "$bucket" "$version" "$path/rex/redirects.json"
+
+  # release.json uploaded separately with 1 hour max-age for browser (cache header reused by /rex/release.json route)
+  # does not affect CloudFront (TTL is set to 0)
+  aws s3 cp --cache-control 'max-age=3600' --content-type 'application/json' "$path/rex/release.json" "s3://$bucket/rex/releases/$version/rex/release.json"
 }
 
 
